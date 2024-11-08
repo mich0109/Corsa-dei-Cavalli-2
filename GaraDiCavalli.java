@@ -1,7 +1,4 @@
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -20,10 +17,12 @@ public class GaraDiCavalli {
     public void avviaGara() {
         System.out.println("I cavalli sono pronti! Partenza...");
 
+        // Avvio di ogni cavallo
         for (Cavallo cavallo : cavalli) {
             cavallo.start();
         }
 
+        // Attende la fine di tutti i cavalli
         for (Cavallo cavallo : cavalli) {
             try {
                 cavallo.join();
@@ -33,38 +32,23 @@ public class GaraDiCavalli {
         }
 
         System.out.println("La gara è terminata!");
-        calcolaClassifica();
+        stampaClassifica();
     }
 
-    private void calcolaClassifica() {
-        List<Cavallo> classifica = new ArrayList<>(cavalli);
-        classifica.sort(Comparator.comparingInt(Cavallo::getMetriPercorsi).reversed());
+    private void stampaClassifica() {
+        cavalli.sort((c1, c2) -> Integer.compare(c2.getMetriPercorsi(), c1.getMetriPercorsi()));
 
         System.out.println("Classifica finale:");
-        for (int i = 0; i < Math.min(3, classifica.size()); i++) {
-            Cavallo cavallo = classifica.get(i);
+        for (int i = 0; i < Math.min(3, cavalli.size()); i++) {
+            Cavallo cavallo = cavalli.get(i);
             System.out.println((i + 1) + ". " + cavallo.getNome() + " - " + cavallo.getMetriPercorsi() + " metri");
         }
 
-        // Chiedi nome file per salvare la classifica
+        // Salva la classifica nel file
         Scanner scanner = new Scanner(System.in);
         System.out.print("Inserisci il nome del file per salvare i risultati: ");
         String nomeFile = scanner.nextLine();
-        salvaClassifica(nomeFile, classifica);
+        GestioneFile.salvaClassifica(nomeFile, cavalli);
         scanner.close();
-    }
-
-    private void salvaClassifica(String nomeFile, List<Cavallo> classifica) {
-        try (FileWriter writer = new FileWriter(nomeFile, true)) { // 'true' per modalità append
-            writer.write("Classifica della gara:\n");
-            for (int i = 0; i < Math.min(3, classifica.size()); i++) {
-                Cavallo cavallo = classifica.get(i);
-                writer.write((i + 1) + ". " + cavallo.getNome() + " - " + cavallo.getMetriPercorsi() + " metri\n");
-            }
-            writer.write("\n");
-            System.out.println("Classifica salvata nel file " + nomeFile);
-        } catch (IOException e) {
-            System.out.println("Errore durante il salvataggio della classifica.");
-        }
     }
 }
